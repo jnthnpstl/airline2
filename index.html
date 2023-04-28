@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="//cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="//cdn.amcharts.com/lib/5/map.js"></script>
+    <script src="//cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+    <script src="//cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+        }
+
+        #chartdiv {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="chartdiv"></div>
+</body>
+<script>
+    am5.ready(function () {
+
+        // Create root element
+        // https://www.amcharts.com/docs/v5/getting-started/#Root_element
+        var root = am5.Root.new("chartdiv");
+
+        // Set themes
+        // https://www.amcharts.com/docs/v5/concepts/themes/
+        root.setThemes([
+            am5themes_Animated.new(root)
+        ]);
+
+        // Create the map chart
+        // https://www.amcharts.com/docs/v5/charts/map-chart/
+        var chart = root.container.children.push(
+            am5map.MapChart.new(root, {
+                panX: "translateX",
+                panY: "translateY",
+                minZoomLevel: 2,
+                projection: am5map.geoMercator()
+            })
+        );
+
+
+        // Create main polygon series for countries
+        // https://www.amcharts.com/docs/v5/charts/map-chart/map-polygon-series/
+        var polygonSeries = chart.series.push(
+            am5map.MapPolygonSeries.new(root, {
+                geoJSON: am5geodata_worldLow
+            })
+        );
+
+        var graticuleSeries = chart.series.push(am5map.GraticuleSeries.new(root, {}));
+        graticuleSeries.mapLines.template.setAll({
+            stroke: root.interfaceColors.get("alternativeBackground"),
+            strokeOpacity: 0.08
+        });
+
+        // Create line series for trajectory lines
+        // https://www.amcharts.com/docs/v5/charts/map-chart/map-line-series/
+        var lineSeries = chart.series.push(am5map.MapLineSeries.new(root, {}));
+        lineSeries.mapLines.template.setAll({
+            stroke: root.interfaceColors.get("alternativeBackground"),
+            strokeOpacity: 0.6
+        });
+
+        // Create point series for markers
+        // https://www.amcharts.com/docs/v5/charts/map-chart/map-point-series/
+        var originSeries = chart.series.push(
+            am5map.MapPointSeries.new(root, { idField: "id" })
+        );
+
+        originSeries.bullets.push(function () {
+            var circle = am5.Circle.new(root, {
+                radius: 7,
+                tooltipText: "{title}",
+                cursorOverStyle: "pointer",
+                tooltipY: 0,
+                fill: am5.color(0xffba00),
+                stroke: root.interfaceColors.get("background"),
+                strokeWidth: 2
+            });
+
+            circle.events.on("click", function (e) {
+                console.log("Hello");
+                selectOrigin(e.target.dataItem.get("id"));
+            });
+            return am5.Bullet.new(root, {
+                sprite: circle
+            });
+        });
+
+
+        var originCities = [
+            {
+                id: "dubai",
+                title: "Dubai",
+                destinations: [
+                    "moscow",
+                    "new york",
+                    "manila",
+                    "nairobi",
+                    "barcelona",
+                    "mexico",
+                    "rio",
+                    "budapest",
+                    "miami"
+                ],
+                geometry: { type: "Point", coordinates: [55.3052, 25.2376] },
+                zoomLevel: 2.32,
+                zoomPoint: { longitude: 33.3052, latitude: 25.2376 }
+            },
+            {
+                id: "new york",
+                title: "New York",
+                destinations: [
+                    "dubai",
+                    "manila",
+                ],
+                geometry: { type: "Point", coordinates: [-74, 40.43] },
+                zoomLevel: 2.92,
+                zoomPoint: { longitude: 26.4492, latitude: 45.2631 }
+            },
+            {
+                id: "nairobi",
+                title: "Nairobi",
+                destinations: [
+                    "dubai",
+                    "manila",
+                ],
+                geometry: { type: "Point", coordinates: [36.8200, -1.2797] },
+                zoomLevel: 4.92,
+                zoomPoint: { longitude: 77.4492, latitude: 4.234 }
+            },
+            {
+                id: "mexico",
+                title: "Mexico City",
+                destinations: [
+                    "barcelona",
+                    "dubai",
+                    "manila",
+                ],
+                geometry: { type: "Point", coordinates: [-99.1310, 19.4266] },
+                zoomLevel: 2.13,
+                zoomPoint: { longitude: 7.4492, latitude: 14.234 }
+            },
+            {
+                id: "barcelona",
+                title: "Barcelona",
+                destinations: [
+                    "dubai",
+                    "manila",
+                ],
+                geometry: { type: "Point", coordinates: [2.1780, 41.3846] },
+                zoomLevel: 3.92,
+                zoomPoint: { longitude: 55.4492, latitude: 24.234 }
+            },
+            {
+                id: "rio",
+                title: "Rio de Janeiro",
+                destinations: [
+                    "dubai",
+                    "manila",
+                ],
+                geometry: { type: "Point", coordinates: [-43.2106, -22.9076] },
+                zoomLevel: 2.92,
+                zoomPoint: { longitude: 34.4492, latitude: 4.234 }
+            },
+            {
+                id: "moscow",
+                title: "Moscow",
+                destinations: [
+                    "dubai",
+                    "manila",
+                ],
+                geometry: { type: "Point", coordinates: [37.6117, 55.7521] },
+                zoomLevel: 4.12,
+                zoomPoint: { longitude: 74.4492, latitude: 34.234 }
+            },
+            {
+                id: "budapest",
+                title: "Budapest",
+                destinations: [
+                    "dubai",
+                    "manila",
+                ],
+                geometry: { type: "Point", coordinates: [19.0379, 47.4988] },
+                zoomLevel: 4.12,
+                zoomPoint: { longitude: 54.4492, latitude: 37.234 }
+            },
+            {
+                id: "miami",
+                title: "Miami",
+                destinations: [
+                    "dubai",
+                    "manila",
+                ],
+                geometry: { type: "Point", coordinates: [-80.1940, 25.7749] },
+                zoomLevel: 2.65,
+                zoomPoint: { longitude: 24.4492, latitude: 37.234 }
+            },
+            {
+                id: "manila",
+                title: "Manila",
+                destinations: [
+                    "dubai",
+                    "manila",
+                ],
+                geometry: { type: "Point", coordinates: [120.9790, 14.5973] },
+                zoomLevel: 4.65,
+                zoomPoint: { longitude: 83.4492, latitude: 17.234 }
+            },
+
+        ];
+
+
+
+        originSeries.data.setAll(originCities);
+
+        function selectOrigin(id) {
+            currentId = id;
+            var dataItem = originSeries.getDataItemById(id);
+            console.log(dataItem);
+            var dataContext = dataItem.dataContext;
+            chart.zoomToGeoPoint(dataContext.zoomPoint, dataContext.zoomLevel, true);
+
+            var destinations = dataContext.destinations;
+            var lineSeriesData = [];
+            var originLongitude = dataItem.get("longitude");
+            var originLatitude = dataItem.get("latitude");
+            if (id == "dubai") {
+                am5.array.each(destinations, function (did) {
+                    destinationDataItem = originSeries.getDataItemById(did);
+                    console.log(destinationDataItem);
+
+                    lineSeriesData.push({
+                        geometry: {
+                            type: "LineString",
+                            coordinates: [
+                                [originLongitude, originLatitude],
+                                [
+                                    destinationDataItem.get("longitude"),
+                                    destinationDataItem.get("latitude")
+                                ]
+
+                            ]
+                        }
+                    });
+                });
+            } else {
+                var temp_lineSeriesData = [[originLongitude, originLatitude]]
+                am5.array.each(destinations, function (did) {
+
+                    destinationDataItem = originSeries.getDataItemById(did);
+
+                    temp_lineSeriesData.push([
+                        destinationDataItem.get("longitude"),
+                        destinationDataItem.get("latitude")
+                    ])
+                });
+                lineSeriesData.push({
+                    geometry: {
+                        type: "LineString",
+                        coordinates: temp_lineSeriesData
+                    }
+                });
+            }
+            lineSeries.data.setAll(lineSeriesData);
+        }
+
+        var currentId = "dubai";
+
+        originSeries.events.on("datavalidated", function () {
+            selectOrigin(currentId);
+        });
+
+        // Make stuff animate on load
+        chart.appear(1000, 100);
+
+    }); // end am5.ready()
+</script>
+
+</html>
