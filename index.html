@@ -11,19 +11,36 @@
     <script src="//cdn.amcharts.com/lib/5/themes/Animated.js"></script>
     <style>
         body {
+            box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
         }
 
+        #container {
+            display: flex;
+        }
+
         #chartdiv {
-            width: 100%;
+            width: 60%;
             height: 100vh;
+        }
+
+        #path {
+            margin: auto;
         }
     </style>
     <title>Document</title>
 </head>
 
 <body>
-    <div id="chartdiv"></div>
+    <div id="container">
+        <div id="chartdiv"></div>
+        <div id="path">
+            <span>Manila</span>
+            <hr>
+            <span>Dubai</span>
+            <span>New York</span>
+        </div>
+    </div>
 </body>
 <script>
     am5.ready(function () {
@@ -84,7 +101,7 @@
                 tooltipText: "{title}",
                 cursorOverStyle: "pointer",
                 tooltipY: 0,
-                fill: am5.color(0xffba00),
+                fill: am5.color(0xb30000),
                 stroke: root.interfaceColors.get("background"),
                 strokeWidth: 2
             });
@@ -92,6 +109,7 @@
             circle.events.on("click", function (e) {
                 console.log("Hello");
                 selectOrigin(e.target.dataItem.get("id"));
+                showRoute(e.target.dataItem.dataContext)
             });
             return am5.Bullet.new(root, {
                 sprite: circle
@@ -104,19 +122,12 @@
                 id: "dubai",
                 title: "Dubai",
                 destinations: [
-                    "moscow",
-                    "new york",
-                    "manila",
-                    "nairobi",
-                    "barcelona",
-                    "mexico",
-                    "rio",
-                    "budapest",
-                    "miami"
+                    "manila"
+
                 ],
                 geometry: { type: "Point", coordinates: [55.3052, 25.2376] },
-                zoomLevel: 2.32,
-                zoomPoint: { longitude: 33.3052, latitude: 25.2376 }
+                zoomLevel: 4.32,
+                zoomPoint: { longitude: 83.3052, latitude: 25.2376 }
             },
             {
                 id: "new york",
@@ -211,12 +222,19 @@
                 id: "manila",
                 title: "Manila",
                 destinations: [
-                    "dubai",
                     "manila",
+                    "moscow",
+                    "new york",
+                    "nairobi",
+                    "barcelona",
+                    "mexico",
+                    "rio",
+                    "budapest",
+                    "miami"
                 ],
                 geometry: { type: "Point", coordinates: [120.9790, 14.5973] },
-                zoomLevel: 4.65,
-                zoomPoint: { longitude: 83.4492, latitude: 17.234 }
+                zoomLevel: 1.65,
+                zoomPoint: { longitude: 3.4492, latitude: 17.234 }
             },
 
         ];
@@ -228,7 +246,6 @@
         function selectOrigin(id) {
             currentId = id;
             var dataItem = originSeries.getDataItemById(id);
-            console.log(dataItem);
             var dataContext = dataItem.dataContext;
             chart.zoomToGeoPoint(dataContext.zoomPoint, dataContext.zoomLevel, true);
 
@@ -236,16 +253,14 @@
             var lineSeriesData = [];
             var originLongitude = dataItem.get("longitude");
             var originLatitude = dataItem.get("latitude");
-            if (id == "dubai") {
+            if (id == "manila") {
                 am5.array.each(destinations, function (did) {
                     destinationDataItem = originSeries.getDataItemById(did);
-                    console.log(destinationDataItem);
-
                     lineSeriesData.push({
                         geometry: {
                             type: "LineString",
                             coordinates: [
-                                [originLongitude, originLatitude],
+                                [55.3052, 25.2376],
                                 [
                                     destinationDataItem.get("longitude"),
                                     destinationDataItem.get("latitude")
@@ -276,7 +291,20 @@
             lineSeries.data.setAll(lineSeriesData);
         }
 
-        var currentId = "dubai";
+        function showRoute(data) {
+            let path_node = document.getElementById('path');
+            while (path_node.firstChild) {
+                path_node.removeChild(path_node.lastChild);
+            }
+
+            data.destinations.slice().reverse().forEach(x => {
+                let span = document.createElement('span');
+                span.innerText = x.charAt(0).toUpperCase() + x.slice(1);;
+                path_node.appendChild(span)
+            })
+        }
+
+        var currentId = "manila";
 
         originSeries.events.on("datavalidated", function () {
             selectOrigin(currentId);
